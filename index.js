@@ -1,7 +1,7 @@
 import { getContext } from "../../../extensions.js";
 import { getPastCharacterChats } from '../../../../script.js';
 
-const extensionName = "chat-companion-stats";
+const extensionName = "chatcompaniontest";
 // Use an absolute path for web requests (relative to the domain root)
 const extensionWebPath = `/scripts/extensions/third-party/${extensionName}`; 
 
