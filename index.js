@@ -507,7 +507,7 @@ jQuery(async () => {
       if (currentMessageCount <= 2 && chats && chats.length > 0 && totalMessagesFromChats > 0) {
           console.log(`当前消息数 (${currentMessageCount}) <= 2，使用历史元数据估算...`);
           // 1. 使用默认密度估算历史总字数
-          const historicalWordsEstimateFromSize = totalSizeKB * 32.5; // Default density
+          const historicalWordsEstimateFromSize = totalSizeKB * 30; // Default density
           // 2. 计算历史平均每条消息字数
           const historicalAvgWordsPerMessage = historicalWordsEstimateFromSize / totalMessagesFromChats;
           // 3. 使用历史平均字数 * 总历史消息数 作为最终估算
