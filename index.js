@@ -468,7 +468,11 @@ jQuery(async () => {
 
         // 获取最早时间
         let chatDate = null;
-        if (chat.file_name) {
+        if (chat.last_mes) { // Prioritize last_mes as requested by the user
+            console.log('Processing chat with last_mes:', chat.last_mes);
+            chatDate = parseSillyTavernDate(chat.last_mes);
+            console.log('Parsed date from last_mes:', chatDate);
+        } else if (chat.file_name) { // Fallback to file_name if last_mes is not available
             const timeInfo = parseTimeFromFilename(chat.file_name);
             if (timeInfo && timeInfo.fullDateTime) {
                 const [datePart, timePart] = timeInfo.fullDateTime.split(' ');
@@ -477,10 +481,6 @@ jQuery(async () => {
                 chatDate = new Date(year, month - 1, day, hours, minutes, seconds);
                 console.log('Parsed date from filename:', chatDate);
             }
-        } else if (chat.last_mes) {
-            console.log('Processing chat with last_mes:', chat.last_mes);
-            chatDate = parseSillyTavernDate(chat.last_mes);
-            console.log('Parsed date from last_mes:', chatDate);
         }
 
         if (chatDate && !isNaN(chatDate.getTime())) {
@@ -1570,25 +1570,31 @@ jQuery(async () => {
                 }
                 console.log('DEBUG: currentChatFileSizeText:', currentChatFileSizeText);
 
-                // Parse date from filename (as requested)
-                const timeInfo = parseTimeFromFilename(currentChatFile.file_name);
-                console.log('DEBUG: timeInfo from filename:', timeInfo);
-                if (timeInfo && timeInfo.fullDateTime) {
-                    const [datePart, timePart] = timeInfo.fullDateTime.split(' ');
-                    const [year, month, day] = datePart.split('-').map(Number);
-                    const [hours, minutes, seconds] = timePart.split(':').map(Number);
-                    
-                    const date = new Date(year, month - 1, day, hours, minutes, seconds);
-                    console.log('DEBUG: Parsed date object:', date);
-                    
-                    if (date && !isNaN(date.getTime())) {
-                        currentChatFirstTime = formatDateTime(date);
-                        const now = new Date();
-                        const utcNow = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-                        const utcFirstTime = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
-                        const diffTime = Math.abs(utcNow - utcFirstTime);
-                        currentChatDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                // Parse date from last_mes as requested by the user
+                let currentChatDate = null;
+                if (currentChatFile.last_mes) {
+                    currentChatDate = parseSillyTavernDate(currentChatFile.last_mes);
+                    console.log('DEBUG: Parsed date from last_mes:', currentChatDate);
+                } else if (currentChatFile.file_name) { // Fallback to file_name if last_mes is not available
+                    const timeInfo = parseTimeFromFilename(currentChatFile.file_name);
+                    if (timeInfo && timeInfo.fullDateTime) {
+                        const [datePart, timePart] = timeInfo.fullDateTime.split(' ');
+                        const [year, month, day] = datePart.split('-').map(Number);
+                        const [hours, minutes, seconds] = timePart.split(':').map(Number);
+                        currentChatDate = new Date(year, month - 1, day, hours, minutes, seconds);
+                        console.log('DEBUG: Parsed date from filename (fallback):', currentChatDate);
                     }
+                }
+
+                if (currentChatDate && !isNaN(currentChatDate.getTime())) {
+                    currentChatFirstTime = formatDateTime(currentChatDate);
+                    const now = new Date();
+                    const utcNow = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+                    const utcFirstTime = Date.UTC(currentChatDate.getFullYear(), currentChatDate.getMonth(), currentChatDate.getDate());
+                    const diffTime = Math.abs(utcNow - utcFirstTime);
+                    currentChatDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                } else {
+                    console.warn(`DEBUG: Could not parse date for current chat from last_mes or file_name.`);
                 }
                 console.log('DEBUG: currentChatFirstTime:', currentChatFirstTime);
                 console.log('DEBUG: currentChatDays:', currentChatDays);
