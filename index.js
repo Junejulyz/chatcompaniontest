@@ -466,27 +466,38 @@ jQuery(async () => {
         // as it historically relied only on the KB value provided by the API.
 
 
-        // 获取最早时间 using the robust parser
-        if (chat.last_mes) {
-          console.log('Processing chat with last_mes:', chat.last_mes);
-          const date = parseSillyTavernDate(chat.last_mes);
-          console.log('Parsed date:', date);
-          if (date) {
-            if (!earliestTime || date < earliestTime) {
-              earliestTime = date;
-              console.log('Updated earliestTime to:', earliestTime);
+        // 获取最早时间
+        let chatDate = null;
+        if (chat.file_name) {
+            const timeInfo = parseTimeFromFilename(chat.file_name);
+            if (timeInfo && timeInfo.fullDateTime) {
+                const [datePart, timePart] = timeInfo.fullDateTime.split(' ');
+                const [year, month, day] = datePart.split('-').map(Number);
+                const [hours, minutes, seconds] = timePart.split(':').map(Number);
+                chatDate = new Date(year, month - 1, day, hours, minutes, seconds);
+                console.log('Parsed date from filename:', chatDate);
             }
-          } else if (chat.last_mes) {
-            console.warn(`Could not parse date format: ${chat.last_mes}`);
-          }
+        } else if (chat.last_mes) {
+            console.log('Processing chat with last_mes:', chat.last_mes);
+            chatDate = parseSillyTavernDate(chat.last_mes);
+            console.log('Parsed date from last_mes:', chatDate);
         }
 
-        // 从文件名解析时间
+        if (chatDate && !isNaN(chatDate.getTime())) {
+            if (!earliestTime || chatDate < earliestTime) {
+                earliestTime = chatDate;
+                console.log('Updated earliestTime to:', earliestTime);
+            }
+        } else if (chat.last_mes || chat.file_name) {
+            console.warn(`Could not parse date from chat: ${chat.file_name || chat.last_mes}`);
+        }
+
+        // 从文件名解析时间 (duration is not used in UI, but keeping the logic for now)
         if (chat.file_name) {
           const timeInfo = parseTimeFromFilename(chat.file_name);
           if (timeInfo) {
-            totalDurationSeconds += timeInfo.totalSeconds;
-            console.log('Added duration from file:', timeInfo);
+            // totalDurationSeconds += timeInfo.totalSeconds; // This was commented out or not fully implemented
+            console.log('Time info from file for duration (not used in UI):', timeInfo);
           }
         }
       });
@@ -503,8 +514,13 @@ jQuery(async () => {
       // 计算估算字数
       let estimatedWords = 0;
 
+      // If there's only one chat file, use the direct estimation for consistency with current chat stats
+      if (chats && chats.length === 1) {
+          estimatedWords = Math.round(totalSizeKB * 30);
+          console.log(`仅有一个聊天文件，使用直接大小估算: ${estimatedWords}字`);
+      }
       // 如果当前聊天消息数量少（<=2）且有历史文件，使用基于历史元数据的估算
-      if (currentMessageCount <= 2 && chats && chats.length > 0 && totalMessagesFromChats > 0) {
+      else if (currentMessageCount <= 2 && chats && chats.length > 0 && totalMessagesFromChats > 0) {
           console.log(`当前消息数 (${currentMessageCount}) <= 2，使用历史元数据估算...`);
           // 1. 使用默认密度估算历史总字数
           const historicalWordsEstimateFromSize = totalSizeKB * 30; // Default density
