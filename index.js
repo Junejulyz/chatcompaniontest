@@ -436,25 +436,25 @@ jQuery(async () => {
         totalMessagesFromChats += chat.chat_items || 0;
         
         // 计算文件大小 (store raw bytes)
-        const sizeMatchKB = chat.file_size?.match(/([\d.]+)\s*KB/i);
-        const sizeMatchMB = chat.file_size?.match(/([\d.]+)\s*MB/i);
-        const sizeMatchBytes = chat.file_size?.match(/^(\d+)$/); // Match plain bytes
+        let currentChatBytes = 0;
+        const fileSizeStr = chat.file_size;
 
-        if (sizeMatchMB) {
-            totalSizeBytesRaw += parseFloat(sizeMatchMB[1]) * 1024 * 1024;
-        } else if (sizeMatchKB) {
-            totalSizeBytesRaw += parseFloat(sizeMatchKB[1]) * 1024;
-        } else if (sizeMatchBytes) {
-            totalSizeBytesRaw += parseInt(sizeMatchBytes[1], 10);
-        } else if (chat.file_size) {
-            // Attempt to parse if it's just a number (assume bytes)
-            const sizeAsNumber = parseFloat(chat.file_size);
-            if (!isNaN(sizeAsNumber)) {
-                totalSizeBytesRaw += sizeAsNumber;
+        if (fileSizeStr) {
+            if (fileSizeStr.toLowerCase().endsWith('mb')) {
+                currentChatBytes = parseFloat(fileSizeStr) * 1024 * 1024;
+            } else if (fileSizeStr.toLowerCase().endsWith('kb')) {
+                currentChatBytes = parseFloat(fileSizeStr) * 1024;
             } else {
-                console.warn(`Could not parse file size: ${chat.file_size}`);
+                // Assume bytes if no unit or if it's just a number
+                const sizeAsNumber = parseFloat(fileSizeStr);
+                if (!isNaN(sizeAsNumber)) {
+                    currentChatBytes = sizeAsNumber;
+                } else {
+                    console.warn(`Could not parse file size: ${fileSizeStr}`);
+                }
             }
         }
+        totalSizeBytesRaw += currentChatBytes;
 
         // --- Calculate totalSizeKB (for word count estimation) --- ADDED BACK
         // This specifically looks for the "KB" unit in the original string
@@ -1523,8 +1523,25 @@ jQuery(async () => {
                 currentChatMessagesCount = currentChatFile.chat_items || 0;
                 console.log('DEBUG: currentChatMessagesCount from currentChatFile:', currentChatMessagesCount);
                 
-                // Format file size
-                const bytes = parseFloat(currentChatFile.file_size) || 0;
+                let currentChatFileBytes = 0;
+                const currentChatFileSizeStr = currentChatFile.file_size;
+
+                if (currentChatFileSizeStr) {
+                    if (currentChatFileSizeStr.toLowerCase().endsWith('mb')) {
+                        currentChatFileBytes = parseFloat(currentChatFileSizeStr) * 1024 * 1024;
+                    } else if (currentChatFileSizeStr.toLowerCase().endsWith('kb')) {
+                        currentChatFileBytes = parseFloat(currentChatFileSizeStr) * 1024;
+                    } else {
+                        const sizeAsNumber = parseFloat(currentChatFileSizeStr);
+                        if (!isNaN(sizeAsNumber)) {
+                            currentChatFileBytes = sizeAsNumber;
+                        } else {
+                            console.warn(`Could not parse current chat file size: ${currentChatFileSizeStr}`);
+                        }
+                    }
+                }
+                
+                const bytes = currentChatFileBytes; // Use the correctly parsed bytes
                 const kb = bytes / 1024;
                 const mb = kb / 1024;
 
