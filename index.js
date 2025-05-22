@@ -1572,9 +1572,12 @@ jQuery(async () => {
 
                 // Parse date from last_mes as requested by the user
                 let currentChatDate = null;
+                console.log('DEBUG: currentChatFile.last_mes (raw):', currentChatFile.last_mes);
+                console.log('DEBUG: currentChatFile.file_name (raw):', currentChatFile.file_name);
+
                 if (currentChatFile.last_mes) {
                     currentChatDate = parseSillyTavernDate(currentChatFile.last_mes);
-                    console.log('DEBUG: Parsed date from last_mes:', currentChatDate);
+                    console.log('DEBUG: Parsed date from last_mes (updateCurrentChatStats):', currentChatDate);
                 } else if (currentChatFile.file_name) { // Fallback to file_name if last_mes is not available
                     const timeInfo = parseTimeFromFilename(currentChatFile.file_name);
                     if (timeInfo && timeInfo.fullDateTime) {
@@ -1582,7 +1585,7 @@ jQuery(async () => {
                         const [year, month, day] = datePart.split('-').map(Number);
                         const [hours, minutes, seconds] = timePart.split(':').map(Number);
                         currentChatDate = new Date(year, month - 1, day, hours, minutes, seconds);
-                        console.log('DEBUG: Parsed date from filename (fallback):', currentChatDate);
+                        console.log('DEBUG: Parsed date from filename (fallback in updateCurrentChatStats):', currentChatDate);
                     }
                 }
 
@@ -1596,8 +1599,8 @@ jQuery(async () => {
                 } else {
                     console.warn(`DEBUG: Could not parse date for current chat from last_mes or file_name.`);
                 }
-                console.log('DEBUG: currentChatFirstTime:', currentChatFirstTime);
-                console.log('DEBUG: currentChatDays:', currentChatDays);
+                console.log('DEBUG: Final currentChatFirstTime (updateCurrentChatStats):', currentChatFirstTime);
+                console.log('DEBUG: Final currentChatDays (updateCurrentChatStats):', currentChatDays);
 
                 // Estimate words from file size
                 const sizeMatchKB_est = currentChatFile.file_size?.match(/([\d.]+)\s*KB/i);
