@@ -1,8 +1,4 @@
-.example-extension-settings {
-  /* 基础样式 */
-}
-
-.example-extension_block {
+.companion-extension_block {
   margin: 10px;
 }
 
@@ -20,49 +16,101 @@
   gap: 10px;
 }
 
-/* 预览模态框样式 */
-#ccs-preview-modal {
+/* Modal Overlay */
+#ccs-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  min-height: 100vh;
-  background: rgba(0,0,0,0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.8); /* Semi-transparent black overlay */
+  display: flex; /* Use flexbox to center content */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+  z-index: 9999; /* Ensure it's on top of everything */
+  overflow: auto; /* Allow scrolling if content is too tall */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
-#ccs-preview-modal > div {
-  background-color: var(--SmartThemeBlurTintColor);
-  color: var(--SmartThemeBodyColor);
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-  width: 420px;
-  max-width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 12px var(--SmartThemeShadowColor);
+/* Hide scrollbar for body/html when modal is open */
+.no-scroll {
+  overflow: hidden !important;
+  height: 100vh !important; /* Ensure full viewport height */
+  width: 100vw !important; /* Ensure full viewport width */
+}
+
+html.no-scroll, body.no-scroll {
+  overflow: hidden !important;
+  height: 100vh !important;
+  width: 100vw !important;
+}
+
+/* Hide the close button for our specific modal */
+#ccs-preview-modal .popup-button-close {
+  display: none;
+}
+
+/* 预览模态框样式 (content inside the overlay) */
+#ccs-preview-modal {
+  /* The .popup classes from SillyTavern will handle most of the styling */
+  /* We just need to ensure it's positioned correctly within the overlay */
+  position: relative; /* Position relative to the overlay */
+  z-index: 10000; /* Ensure it's above the overlay background */
+  max-height: 90vh; /* Limit modal height to 90% of viewport height */
+  max-width: 90vw; /* Limit modal width to 90% of viewport width */
+  margin: auto; /* Center the modal within the flex container */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+  /* Remove display: none; here, as the overlay will control visibility */
+}
+
+/* Styles for the internal structure of the popup */
+/* These classes are now part of the SillyTavern popup structure */
+.popup-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Allow popup-body to fill the dialog */
+}
+
+.popup-content {
+  display: flex; /* Use flexbox for children */
+  flex-direction: column; /* Stack children vertically */
+  flex-grow: 1; /* Allow content to take available space */
+  overflow-y: hidden; /* Prevent scrolling on this container */
+  padding: 10px; /* Add padding inside the content area */
 }
 
 #ccs-preview-container {
-  margin: 20px 0;
+  margin-bottom: 10px; 
+  flex-shrink: 0; /* Prevent preview container from shrinking */
+  text-align: center; /* Center the image within its container */
 }
 
 #ccs-preview-container img {
-  max-width: 100%;
+  max-width: 100% !important;
   height: auto;
-  border-radius: 5px;
+  border-radius: 15px;
+  display: block; /* To allow margin: auto for centering */
+  margin: 0 auto; /* Center the image */
+  border: none !important; /* Remove any default border */
+}
+
+@media (min-width: 601px) { /* For desktop screens */
+  #ccs-preview-container img {
+    max-width: 80% !important;
+  }
+}
+
+#ccs-customization-scroll-area {
+  flex-grow: 1; /* Allow this section to grow and take available space */
+  overflow-y: auto; /* Make this section scrollable */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  padding: 10px 0; /* Add some padding */
 }
 
 .button-container {
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin-top: 20px;
 }
 
 .ccs-stats-container {
@@ -114,4 +162,144 @@
 .ccs-tip-text {
     flex: 1;
     color: var(--SmartThemeBodyColor);
+}
+
+/* Tab styles */
+.tab-container {
+    margin-top: 10px;
+}
+
+.tab-header {
+    display: flex;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    margin-bottom: 10px;
+}
+
+.tab-button {
+    padding: 10px 15px;
+    cursor: pointer;
+    background-color: transparent;
+    color: var(--SmartThemeBodyColor);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    margin-right: 5px;
+}
+
+.tab-button.active {
+    color: var(--SmartThemeBodyColor);
+    position: relative; 
+}
+
+.tab-button.active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 3px;
+    background-color: var(--SmartThemeQuoteColor); 
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Customization options styles */
+.ccs-customization-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 5px;
+    justify-content: flex-start; /* Align items to the start */
+}
+
+.ccs-color-picker-group {
+    display: flex;
+    align-items: center;
+    width: calc(50% - 8px); /* Adjusted width for two items per row, considering gap */
+    gap: 5px;
+}
+
+@media (max-width: 600px) { /* Adjust breakpoint as needed for mobile */
+    .ccs-color-picker-group {
+        width: 100%; /* Full width on smaller screens */
+    }
+}
+
+.ccs-color-picker-group label {
+    flex-shrink: 0; /* Prevent label from shrinking */
+    width: 80px; /* Fixed width for labels */
+    text-align: left;
+    color: var(--SmartThemeBodyColor);
+}
+
+.ccs-color-picker-group input[type="color"] {
+    width: 80px; /* Allow picker to take remaining width */
+    height: 30px;
+    border: none;
+    padding: 0;
+    background: none;
+    cursor: pointer;
+}
+
+.ccs-preset-group {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Reduced gap */
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    justify-content: flex-start; /* Align items to the start */
+}
+
+.ccs-preset-group label {
+    flex-shrink: 0; /* Prevent label from growing */
+    width: 80px; /* Fixed width for labels, similar to color pickers */
+    text-align: left;
+    color: var(--SmartThemeBodyColor);
+}
+
+.ccs-preset-group select {
+    width: 120px; /* Slightly reduced width for dropdown */
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    background-color: var(--SmartThemeBlurTintColor);
+    color: var(--SmartThemeBodyColor);
+    margin-bottom: 0px;
+}
+
+#ccs-add-custom-preset {
+    margin: 0px;
+}
+
+#ccs-custom-preset-input-area {
+    display: flex;
+    flex-direction: row; /* Stack children vertically */
+    gap: 10px; /* Add some space between input and button */
+    width: 100%; /* Ensure it takes full width */
+}
+
+#ccs-custom-preset-input-area input[type="text"] {
+    width: 100%; /* Take full width of its parent flex container */
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    background-color: var(--SmartThemeBlurTintColor);
+    color: var(--SmartThemeBodyColor);
+}
+
+#ccs-custom-preset-input-area button {
+    width: auto; /* Allow button to size naturally */
+    padding: 8px 15px;
+    border-radius: 5px;
+    border: none;
+    background-color: var(--SmartThemeQuoteColor);
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
 }
